@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon-cyan: #00f5ff;
+  --neon-magenta: #ff00ff;
+  --neon-yellow: #ffff00;
+  --neon-green: #00ff00;
+}
+
+body {
+  background: #0a0a0f;
+  color: #ffffff;
+}
+
+.pixel-font {
+  font-family: 'Press Start 2P', cursive;
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+}
+
+.glow-magenta {
+  box-shadow: 0 0 20px var(--neon-magenta), 0 0 40px var(--neon-magenta);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+}
+
+.text-glow-magenta {
+  text-shadow: 0 0 10px var(--neon-magenta), 0 0 20px var(--neon-magenta);
+}
+
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes battle {
+  0% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(30px) rotate(10deg); }
+  50% { transform: translateX(0) rotate(0deg); }
+  75% { transform: translateX(-30px) rotate(-10deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes battle-reverse {
+  0% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-30px) rotate(-10deg); }
+  50% { transform: translateX(0) rotate(0deg); }
+  75% { transform: translateX(30px) rotate(10deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes shoot {
+  0%, 100% { opacity: 0; width: 0; }
+  50% { opacity: 1; width: 60px; }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-battle {
+  animation: battle 2s ease-in-out infinite;
+}
+
+.animate-battle-reverse {
+  animation: battle-reverse 2s ease-in-out infinite;
+}
+
+.btn-primary {
+  @apply px-8 py-4 bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-bold rounded-lg 
+         hover:from-cyan-400 hover:to-cyan-300 transition-all duration-300 
+         hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/50;
+}
+
+.btn-secondary {
+  @apply px-8 py-4 border-2 border-magenta-500 text-magenta-400 font-bold rounded-lg
+         hover:bg-magenta-500/20 transition-all duration-300
+         hover:scale-105 hover:shadow-lg hover:shadow-magenta-500/50;
+}
+
+.input-dark {
+  @apply w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg
+         focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-none
+         placeholder-gray-500 transition-all duration-300;
+}
