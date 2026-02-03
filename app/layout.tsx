@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ConvexClientProvider } from './ConvexClientProvider'
 
 export const metadata: Metadata = {
   title: 'BotRoyale - 100 Bots Enter. 1 Survives.',
@@ -23,7 +24,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen grid-bg">{children}</body>
+      <body className="min-h-screen grid-bg">
+        <ConvexClientProvider>{children}</ConvexClientProvider>
+      </body>
     </html>
   )
 }

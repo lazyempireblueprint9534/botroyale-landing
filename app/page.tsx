@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { api } from '../convex/_generated/api'
 
 // Pixel Bot Component
 function PixelBot({ color, className }: { color: string; className?: string }) {
@@ -81,25 +83,35 @@ export default function Home() {
   const [nameStatus, setNameStatus] = useState<'idle' | 'available' | 'taken'>('idle')
   const [email, setEmail] = useState('')
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null)
-  const [waitlistCount, setWaitlistCount] = useState(847)
+  const [displayCount, setDisplayCount] = useState(0)
   const [reservedName, setReservedName] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
+
+  // Convex hooks
+  const joinWaitlistMutation = useMutation(api.waitlist.join)
+  const waitlistCount = useQuery(api.waitlist.count) ?? 0
+  
+  // Base count + real signups
+  const baseCount = 847
+  const totalCount = baseCount + waitlistCount
 
   // Animate waitlist counter on load
   useEffect(() => {
-    const target = 847
+    const target = totalCount
     let current = 0
     const increment = Math.ceil(target / 50)
     const timer = setInterval(() => {
       current += increment
       if (current >= target) {
-        setWaitlistCount(target)
+        setDisplayCount(target)
         clearInterval(timer)
       } else {
-        setWaitlistCount(current)
+        setDisplayCount(current)
       }
     }, 30)
     return () => clearInterval(timer)
-  }, [])
+  }, [totalCount])
 
   const checkBotName = () => {
     if (!botName.trim()) return
@@ -109,11 +121,30 @@ export default function Home() {
     if (isAvailable) setReservedName(botName)
   }
 
-  const joinWaitlist = () => {
+  const joinWaitlist = async () => {
     if (!email.trim()) return
-    // Simulate joining waitlist
-    const position = Math.floor(Math.random() * 100) + waitlistCount + 1
-    setWaitlistPosition(position)
+    
+    setIsSubmitting(true)
+    setSubmitMessage('')
+    
+    try {
+      const result = await joinWaitlistMutation({ 
+        email, 
+        source: reservedName ? `landing-bot:${reservedName}` : 'landing' 
+      })
+      
+      if (result.alreadyExists) {
+        setSubmitMessage("You're already on the list! 🎮")
+      } else {
+        const position = totalCount + 1
+        setWaitlistPosition(position)
+      }
+    } catch (error) {
+      setSubmitMessage('Something went wrong. Try again!')
+      console.error(error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const tweetText = encodeURIComponent(
@@ -152,7 +183,7 @@ Reserve yours: https://botroyale.gg`
           <div className="mt-12 mb-8">
             <p className="text-gray-500 text-sm mb-2">WARRIORS WAITING</p>
             <p className="pixel-font text-5xl md:text-6xl text-cyan-400 text-glow-cyan">
-              {waitlistCount.toLocaleString()}
+              {displayCount.toLocaleString()}
             </p>
           </div>
 
@@ -219,22 +250,30 @@ Reserve yours: https://botroyale.gg`
           </p>
 
           {!waitlistPosition ? (
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-dark flex-1"
-              />
-              <button
-                onClick={joinWaitlist}
-                className="px-8 py-3 bg-gradient-to-r from-magenta-500 to-pink-500 text-white font-bold rounded-lg 
-                         hover:from-magenta-400 hover:to-pink-400 transition-all duration-300 
-                         hover:scale-105 hover:shadow-lg hover:shadow-magenta-500/50"
-              >
-                JOIN WAITLIST
-              </button>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-dark flex-1"
+                  onKeyDown={(e) => e.key === 'Enter' && joinWaitlist()}
+                />
+                <button
+                  onClick={joinWaitlist}
+                  disabled={isSubmitting}
+                  className="px-8 py-3 bg-gradient-to-r from-magenta-500 to-pink-500 text-white font-bold rounded-lg 
+                           hover:from-magenta-400 hover:to-pink-400 transition-all duration-300 
+                           hover:scale-105 hover:shadow-lg hover:shadow-magenta-500/50
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {isSubmitting ? 'JOINING...' : 'JOIN WAITLIST'}
+                </button>
+              </div>
+              {submitMessage && (
+                <p className="text-yellow-400 pixel-font text-sm">{submitMessage}</p>
+              )}
             </div>
           ) : (
             <div className="space-y-6">
@@ -333,7 +372,7 @@ Reserve yours: https://botroyale.gg`
           </div>
           
           <div className="flex gap-6">
-            <a href="#" className="text-gray-500 hover:text-cyan-400 transition-colors">
+            <a href="https://twitter.com/BotRoyaleGG" className="text-gray-500 hover:text-cyan-400 transition-colors">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
