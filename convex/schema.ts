@@ -162,6 +162,20 @@ export default defineSchema({
       newZone: v.optional(v.object({ min: v.number(), max: v.number() })),
     })),
     
+    // Full match history for replays (stored after each tick)
+    history: v.optional(v.array(v.object({
+      tick: v.number(),
+      players: v.array(v.object({
+        botId: v.string(),
+        x: v.number(),
+        y: v.number(),
+        hp: v.number(),
+        alive: v.boolean(),
+      })),
+      zone: v.object({ min: v.number(), max: v.number() }),
+      events: v.array(v.any()),
+    }))),
+    
     // Results (set when completed)
     winnerId: v.optional(v.id("bots")),
     placements: v.optional(v.array(v.object({

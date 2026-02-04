@@ -570,6 +570,22 @@ async function processTick(ctx: any, matchId: any) {
       .sort((a, b) => a.placement - b.placement);
   }
 
+  // Build history snapshot for this tick
+  const tickSnapshot = {
+    tick: match.currentTick,
+    players: playerStates.map(p => ({
+      botId: p.botId,
+      x: p.x,
+      y: p.y,
+      hp: p.hp,
+      alive: p.alive,
+    })),
+    zone: { min: newZoneMin, max: newZoneMax },
+    events: events,
+  };
+  
+  const history = [...(match.history || []), tickSnapshot];
+
   // Update match
   await ctx.db.patch(matchId, {
     currentTick: nextTick,
@@ -578,6 +594,7 @@ async function processTick(ctx: any, matchId: any) {
     playerStates,
     pendingActions: {},
     lastTickEvents: events,
+    history,
     status,
     ...(winnerId ? { winnerId } : {}),
     ...(placements ? { placements } : {}),
@@ -675,6 +692,36 @@ export const getActiveMatches = query({
     }
 
     return result;
+  },
+});
+
+// Get match replay data (full history for video generation)
+export const getReplay = query({
+  args: { matchId: v.id("gridMatches") },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+    if (!match) throw new Error("Match not found");
+    if (match.status !== "completed") throw new Error("Match not completed yet");
+
+    const botNames: Record<string, string> = {};
+    for (const playerId of match.players) {
+      const bot = await ctx.db.get(playerId);
+      if (bot) {
+        botNames[playerId] = bot.name;
+      }
+    }
+
+    return {
+      match_id: match._id,
+      grid_size: match.gridSize,
+      players: match.players.map(id => ({ id, name: botNames[id] || "Unknown" })),
+      history: match.history || [],
+      placements: match.placements?.map(p => ({
+        ...p,
+        name: botNames[p.botId] || "Unknown",
+      })),
+      winner: match.winnerId ? botNames[match.winnerId] : null,
+    };
   },
 });
 
