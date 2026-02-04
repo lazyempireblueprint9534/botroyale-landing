@@ -12,6 +12,7 @@ import type * as bots from "../bots.js";
 import type * as crons from "../crons.js";
 import type * as gameEngine from "../gameEngine.js";
 import type * as matches from "../matches.js";
+import type * as rps from "../rps.js";
 import type * as scheduler from "../scheduler.js";
 import type * as waitlist from "../waitlist.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   gameEngine: typeof gameEngine;
   matches: typeof matches;
+  rps: typeof rps;
   scheduler: typeof scheduler;
   waitlist: typeof waitlist;
 }>;

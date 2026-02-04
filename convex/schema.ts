@@ -9,6 +9,29 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_email", ["email"]),
 
+  // RPS Matches (simple 1v1)
+  rpsMatches: defineTable({
+    player1Id: v.id("bots"),
+    player2Id: v.id("bots"),
+    status: v.string(), // "active" | "completed"
+    currentRound: v.number(),
+    player1Score: v.number(),
+    player2Score: v.number(),
+    rounds: v.array(v.object({
+      round: v.number(),
+      player1Move: v.string(),
+      player2Move: v.string(),
+      winner: v.string(), // "player1" | "player2" | "tie"
+    })),
+    currentRoundMoves: v.any(), // { player1?: string, player2?: string }
+    winner: v.optional(v.id("bots")),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_player1", ["player1Id"])
+    .index("by_player2", ["player2Id"]),
+
   // Registered bots
   bots: defineTable({
     name: v.string(),

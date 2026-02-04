@@ -154,3 +154,151 @@ export const count = query({
     return bots.length;
   },
 });
+
+// Join matchmaking queue
+export const joinQueue = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const bot = await ctx.db
+      .query("bots")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!bot) throw new Error("Bot not found");
+
+    // Check if already in queue
+    const existingEntry = await ctx.db
+      .query("queue")
+      .withIndex("by_bot", (q) => q.eq("botId", bot._id))
+      .first();
+
+    if (existingEntry) {
+      throw new Error("Already in queue");
+    }
+
+    // Check if already in active match
+    const activeMatch1 = await ctx.db
+      .query("rpsMatches")
+      .withIndex("by_player1", (q) => q.eq("player1Id", bot._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+    
+    const activeMatch2 = await ctx.db
+      .query("rpsMatches")
+      .withIndex("by_player2", (q) => q.eq("player2Id", bot._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+
+    if (activeMatch1 || activeMatch2) {
+      const matchId = activeMatch1?._id || activeMatch2?._id;
+      return { alreadyInMatch: true, matchId };
+    }
+
+    // Check for other bots waiting in queue
+    const waitingBots = await ctx.db
+      .query("queue")
+      .withIndex("by_status", (q) => q.eq("status", "waiting"))
+      .collect();
+
+    if (waitingBots.length > 0) {
+      // Match with first waiting bot
+      const opponent = waitingBots[0];
+      
+      // Remove opponent from queue
+      await ctx.db.delete(opponent._id);
+
+      // Create match
+      const matchId = await ctx.db.insert("rpsMatches", {
+        player1Id: opponent.botId,
+        player2Id: bot._id,
+        status: "active",
+        currentRound: 1,
+        player1Score: 0,
+        player2Score: 0,
+        rounds: [],
+        currentRoundMoves: {},
+        createdAt: Date.now(),
+      });
+
+      // Update last active
+      await ctx.db.patch(bot._id, { lastActive: Date.now() });
+
+      return { matched: true, matchId };
+    }
+
+    // No one waiting, add to queue
+    await ctx.db.insert("queue", {
+      botId: bot._id,
+      joinedAt: Date.now(),
+      status: "waiting",
+    });
+
+    await ctx.db.patch(bot._id, { lastActive: Date.now() });
+
+    return { queued: true, matched: false };
+  },
+});
+
+// Leave queue
+export const leaveQueue = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const bot = await ctx.db
+      .query("bots")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!bot) throw new Error("Bot not found");
+
+    const queueEntry = await ctx.db
+      .query("queue")
+      .withIndex("by_bot", (q) => q.eq("botId", bot._id))
+      .first();
+
+    if (queueEntry) {
+      await ctx.db.delete(queueEntry._id);
+    }
+
+    return { success: true };
+  },
+});
+
+// Get queue status
+export const getQueueStatus = query({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const bot = await ctx.db
+      .query("bots")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!bot) throw new Error("Bot not found");
+
+    // Check if in queue
+    const queueEntry = await ctx.db
+      .query("queue")
+      .withIndex("by_bot", (q) => q.eq("botId", bot._id))
+      .first();
+
+    // Check if in active match
+    const activeMatch1 = await ctx.db
+      .query("rpsMatches")
+      .withIndex("by_player1", (q) => q.eq("player1Id", bot._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+    
+    const activeMatch2 = await ctx.db
+      .query("rpsMatches")
+      .withIndex("by_player2", (q) => q.eq("player2Id", bot._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+
+    const activeMatch = activeMatch1 || activeMatch2;
+
+    return {
+      in_queue: !!queueEntry,
+      matched: !!activeMatch,
+      matchId: activeMatch?._id || null,
+    };
+  },
+});
