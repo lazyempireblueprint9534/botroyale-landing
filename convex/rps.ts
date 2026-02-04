@@ -155,7 +155,7 @@ export const submitMove = mutation({
 
       // Check if match is over
       let status = match.status;
-      let matchWinner = null;
+      let matchWinner: typeof match.player1Id | undefined = undefined;
 
       if (player1Score >= 50) {
         status = "completed";
@@ -169,7 +169,7 @@ export const submitMove = mutation({
           ? match.player1Id 
           : player2Score > player1Score 
           ? match.player2Id 
-          : null; // Tie at 99, sudden death would go here
+          : undefined; // Tie at 99, sudden death would go here
       }
 
       // Update match
@@ -180,7 +180,7 @@ export const submitMove = mutation({
         rounds,
         currentRoundMoves: {},
         status,
-        winner: matchWinner,
+        ...(matchWinner ? { winner: matchWinner } : {}),
         ...(status === "completed" ? { completedAt: Date.now() } : {}),
       });
 
