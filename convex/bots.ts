@@ -157,6 +157,25 @@ export const count = query({
   },
 });
 
+// Fix ELO based on win/loss record (one-time migration)
+export const fixElo = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const bots = await ctx.db.query("bots").collect();
+    const K = 32;
+    
+    for (const bot of bots) {
+      // Simple ELO fix: +16 per win, -16 per loss from base 1000
+      const newElo = 1000 + (bot.wins * 16) - (bot.losses * 16);
+      await ctx.db.patch(bot._id, {
+        elo: Math.max(100, newElo),
+      });
+    }
+    
+    return { fixed: bots.length };
+  },
+});
+
 // Join matchmaking queue
 export const joinQueue = mutation({
   args: { token: v.string() },

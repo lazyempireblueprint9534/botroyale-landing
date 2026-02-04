@@ -584,13 +584,51 @@ async function processTick(ctx: any, matchId: any) {
     ...(status === "completed" ? { completedAt: Date.now() } : {}),
   });
 
-  // Update bot stats if match completed
-  if (status === "completed" && placements) {
+  // Update bot stats and ELO if match completed
+  if (status === "completed" && placements && placements.length >= 2) {
+    // Get all bots for ELO calculation
+    const bots: any[] = [];
+    for (const p of placements) {
+      const bot = await ctx.db.get(p.botId);
+      if (bot) {
+        bots.push({ ...bot, placement: p.placement, kills: p.kills });
+      }
+    }
+
+    // Calculate ELO changes (K=32)
+    const K = 32;
+    const eloChanges: Record<string, number> = {};
+
+    // For 1v1: simple ELO calculation
+    if (bots.length === 2) {
+      const winner = bots.find(b => b.placement === 1);
+      const loser = bots.find(b => b.placement !== 1);
+      if (winner && loser) {
+        const expectedWin = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
+        const eloGain = Math.round(K * (1 - expectedWin));
+        eloChanges[winner._id] = eloGain;
+        eloChanges[loser._id] = -eloGain;
+      }
+    } else {
+      // For multi-player: simplified - winner gains, others lose proportionally
+      const avgElo = bots.reduce((sum, b) => sum + b.elo, 0) / bots.length;
+      for (const bot of bots) {
+        if (bot.placement === 1) {
+          eloChanges[bot._id] = Math.round(K * (1 - 1 / bots.length));
+        } else {
+          eloChanges[bot._id] = Math.round(-K / (bots.length - 1));
+        }
+      }
+    }
+
+    // Update each bot
     for (const p of placements) {
       const bot = await ctx.db.get(p.botId);
       if (bot) {
         const isWin = p.placement === 1;
+        const eloChange = eloChanges[p.botId] || 0;
         await ctx.db.patch(p.botId, {
+          elo: Math.max(100, bot.elo + eloChange), // Minimum ELO of 100
           wins: bot.wins + (isWin ? 1 : 0),
           losses: bot.losses + (isWin ? 0 : 1),
           kills: bot.kills + p.kills,
