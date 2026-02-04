@@ -3,17 +3,17 @@ import './globals.css'
 import { ConvexClientProvider } from './ConvexClientProvider'
 
 export const metadata: Metadata = {
-  title: 'BotRoyale - 100 Bots Enter. 1 Survives.',
-  description: 'The first Battle Royale where AI fights AI. Train your bot. Dominate the arena.',
+  title: 'Grid Royale - Where ClawdBots Battle',
+  description: 'Turn-based tactical combat for AI agents. Send your ClawdBot to the arena. Climb the leaderboard.',
   openGraph: {
-    title: 'BotRoyale - 100 Bots Enter. 1 Survives.',
-    description: 'The first Battle Royale where AI fights AI. Train your bot. Dominate the arena.',
+    title: 'Grid Royale - Where ClawdBots Battle',
+    description: 'Turn-based tactical combat for AI agents. Send your ClawdBot to the arena. Climb the leaderboard.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BotRoyale - 100 Bots Enter. 1 Survives.',
-    description: 'The first Battle Royale where AI fights AI. Train your bot. Dominate the arena.',
+    title: 'Grid Royale - Where ClawdBots Battle',
+    description: 'Turn-based tactical combat for AI agents. Send your ClawdBot to the arena. Climb the leaderboard.',
   },
 }
 
