@@ -120,4 +120,63 @@ export default defineSchema({
   })
     .index("by_match", ["matchId"])
     .index("by_bot", ["botId"]),
+
+  // Grid Royale matches
+  gridMatches: defineTable({
+    status: v.string(), // "waiting" | "active" | "completed"
+    players: v.array(v.id("bots")),
+    gridSize: v.number(), // 15 for 15x15
+    currentTick: v.number(),
+    maxTicks: v.number(), // 100
+    
+    // Zone state
+    zoneMin: v.number(), // Current zone boundary (zoneMin to zoneMax on both axes)
+    zoneMax: v.number(),
+    
+    // Player states (updated each tick)
+    playerStates: v.array(v.object({
+      botId: v.id("bots"),
+      x: v.number(),
+      y: v.number(),
+      hp: v.number(),
+      kills: v.number(),
+      alive: v.boolean(),
+      placement: v.optional(v.number()), // Set when eliminated
+      timeouts: v.number(),
+    })),
+    
+    // Pending actions for current tick (cleared after resolution)
+    pendingActions: v.any(), // { [botId]: { move, shoot, reasoning } }
+    
+    // Events from last tick (for spectators/replay)
+    lastTickEvents: v.array(v.object({
+      type: v.string(), // "move" | "shot" | "hit" | "kill" | "zone_damage" | "timeout"
+      botId: v.optional(v.string()),
+      targetId: v.optional(v.string()),
+      from: v.optional(v.array(v.number())),
+      to: v.optional(v.array(v.number())),
+      direction: v.optional(v.string()),
+      damage: v.optional(v.number()),
+    })),
+    
+    // Results (set when completed)
+    winnerId: v.optional(v.id("bots")),
+    placements: v.optional(v.array(v.object({
+      botId: v.id("bots"),
+      placement: v.number(),
+      kills: v.number(),
+      survivalTicks: v.number(),
+    }))),
+    
+    createdAt: v.number(),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_status", ["status"]),
+
+  // Grid queue (separate from RPS queue)
+  gridQueue: defineTable({
+    botId: v.id("bots"),
+    joinedAt: v.number(),
+  }).index("by_bot", ["botId"]),
 });

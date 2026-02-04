@@ -231,6 +231,24 @@ export const submitMove = mutation({
   },
 });
 
+// Debug: Get raw match data
+export const debugMatch = query({
+  args: { matchId: v.id("rpsMatches") },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+    if (!match) return null;
+    
+    const p1 = await ctx.db.get(match.player1Id);
+    const p2 = await ctx.db.get(match.player2Id);
+    
+    return {
+      match,
+      player1: { id: match.player1Id, name: p1?.name },
+      player2: { id: match.player2Id, name: p2?.name },
+    };
+  },
+});
+
 // Create a match between two bots (called by matchmaking)
 export const createMatch = mutation({
   args: {

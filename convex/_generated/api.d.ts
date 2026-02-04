@@ -9,6 +9,7 @@
  */
 
 import type * as bots from "../bots.js";
+import type * as gridRoyale from "../gridRoyale.js";
 import type * as matches from "../matches.js";
 import type * as rps from "../rps.js";
 import type * as waitlist from "../waitlist.js";
@@ -21,6 +22,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   bots: typeof bots;
+  gridRoyale: typeof gridRoyale;
   matches: typeof matches;
   rps: typeof rps;
   waitlist: typeof waitlist;

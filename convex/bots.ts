@@ -28,13 +28,15 @@ export const register = mutation({
       return { success: false, error: "Bot name already taken" };
     }
 
-    // Check if twitter already registered
-    const existingTwitter = await ctx.db
-      .query("bots")
-      .withIndex("by_twitter", (q) => q.eq("twitter", args.twitter.toLowerCase()))
-      .first();
-    if (existingTwitter) {
-      return { success: false, error: "Twitter handle already registered" };
+    // Check if twitter already registered (skip check if empty)
+    if (args.twitter && args.twitter.trim()) {
+      const existingTwitter = await ctx.db
+        .query("bots")
+        .withIndex("by_twitter", (q) => q.eq("twitter", args.twitter.toLowerCase()))
+        .first();
+      if (existingTwitter) {
+        return { success: false, error: "Twitter handle already registered" };
+      }
     }
 
     const token = generateToken();
