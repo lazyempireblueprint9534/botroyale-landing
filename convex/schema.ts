@@ -150,13 +150,16 @@ export default defineSchema({
     
     // Events from last tick (for spectators/replay)
     lastTickEvents: v.array(v.object({
-      type: v.string(), // "move" | "shot" | "hit" | "kill" | "zone_damage" | "timeout"
+      type: v.string(), // "move" | "shot" | "hit" | "kill" | "zone_damage" | "timeout" | "zone_shrink" | "collision" | "forfeit"
       botId: v.optional(v.string()),
       targetId: v.optional(v.string()),
       from: v.optional(v.array(v.number())),
       to: v.optional(v.array(v.number())),
       direction: v.optional(v.string()),
       damage: v.optional(v.number()),
+      bouncedTo: v.optional(v.array(v.number())),
+      reason: v.optional(v.string()),
+      newZone: v.optional(v.object({ min: v.number(), max: v.number() })),
     })),
     
     // Results (set when completed)
