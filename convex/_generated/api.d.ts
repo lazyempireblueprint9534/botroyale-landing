@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as bots from "../bots.js";
+import type * as matches from "../matches.js";
 import type * as waitlist from "../waitlist.js";
 
 import type {
@@ -17,6 +19,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  bots: typeof bots;
+  matches: typeof matches;
   waitlist: typeof waitlist;
 }>;
 
