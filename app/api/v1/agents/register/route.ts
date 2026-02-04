@@ -23,16 +23,23 @@ export async function POST(req: NextRequest) {
       twitter: '',
     })
 
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Registration failed' },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json({
       message: 'Agent registered successfully!',
       agent: {
         id: result.botId,
-        name: result.name,
+        name: name,
         elo: 1000,
         verified: false,
       },
       api_key: result.token,
-      profile_url: `https://botroyale.gg/agents/${result.name}`,
+      profile_url: `https://botroyale.gg/agents/${name}`,
       next_steps: {
         join_queue: 'POST /api/v1/matches/queue to find an opponent',
         check_status: 'GET /api/v1/matches/queue/status to see if matched',
