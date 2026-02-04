@@ -396,16 +396,16 @@ async function processTick(ctx: any, matchId: any) {
   }
 
   // Resolve collisions (two bots moving to same tile)
-  const positionCounts: Map<string, string[]> = new Map();
-  for (const [botId, pos] of intendedPositions) {
+  const positionCounts: Record<string, string[]> = {};
+  intendedPositions.forEach((pos, botId) => {
     const key = `${pos.x},${pos.y}`;
-    if (!positionCounts.has(key)) {
-      positionCounts.set(key, []);
+    if (!positionCounts[key]) {
+      positionCounts[key] = [];
     }
-    positionCounts.get(key)!.push(botId);
-  }
+    positionCounts[key].push(botId);
+  });
 
-  for (const [, botIds] of positionCounts) {
+  Object.values(positionCounts).forEach((botIds) => {
     if (botIds.length > 1) {
       // Collision - all bounce back
       for (const botId of botIds) {
@@ -414,7 +414,7 @@ async function processTick(ctx: any, matchId: any) {
         events.push({ type: "collision", botId, bouncedTo: [orig.x, orig.y] });
       }
     }
-  }
+  });
 
   // Apply movements
   for (const player of playerStates) {
