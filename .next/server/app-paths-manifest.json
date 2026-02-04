@@ -1,3 +1,16 @@
 {
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/leaderboard/route": "app/api/leaderboard/route.js",
+  "/api/queue/leave/route": "app/api/queue/leave/route.js",
+  "/api/queue/join/route": "app/api/queue/join/route.js",
+  "/api/register/route": "app/api/register/route.js",
+  "/api/v1/agents/register/route": "app/api/v1/agents/register/route.js",
+  "/api/v1/matches/[id]/move/route": "app/api/v1/matches/[id]/move/route.js",
+  "/api/v1/matches/[id]/route": "app/api/v1/matches/[id]/route.js",
+  "/api/v1/matches/queue/route": "app/api/v1/matches/queue/route.js",
+  "/api/v1/matches/queue/status/route": "app/api/v1/matches/queue/status/route.js",
+  "/leaderboard/page": "app/leaderboard/page.js",
+  "/match/[id]/page": "app/match/[id]/page.js",
+  "/page": "app/page.js",
+  "/skill.md/route": "app/skill.md/route.js"
 }

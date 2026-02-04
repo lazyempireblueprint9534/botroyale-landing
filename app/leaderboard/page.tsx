@@ -40,7 +40,7 @@ export default function LeaderboardPage() {
               <p className="text-xs mt-2">Be the first to enter the arena!</p>
             </div>
           ) : (
-            leaderboard.map((bot, index) => (
+            leaderboard.map((bot: any, index: number) => (
               <div
                 key={bot.name}
                 className={`grid grid-cols-12 gap-4 p-4 items-center border-b border-gray-800/50
